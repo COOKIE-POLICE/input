@@ -10,6 +10,7 @@ GODOTTT!!!!! As a Godot developer that migrated to Roblox very recently, I creat
 ---
 
 ## Table of Contents... If You're That Lazy
+
 - [Best Input Library for Roblox (No Bias)](#best-input-library-for-roblox-no-bias)
 - [Table of Contents... If You're That Lazy](#table-of-contents-if-youre-that-lazy)
 - [Why Use This Over `UserInputService`?](#why-use-this-over-userinputservice)
@@ -25,21 +26,26 @@ GODOTTT!!!!! As a Godot developer that migrated to Roblox very recently, I creat
 - [Device Data](#device-data)
 - [Rebinding Actions](#rebinding-actions)
 - [Check if Any Input is Pressed](#check-if-any-input-is-pressed)
+- [Custom Combined Actions](#custom-combined-actions)
+	- [Adding a Combined Action:](#adding-a-combined-action)
 - [Cheatsheet](#cheatsheet)
+- [Notes](#notes)
 - [Testimonials](#testimonials)
 
 ---
 
 ## Why Use This Over `UserInputService`?
 
-You might be asking. Why would anyone use this over the original Roblox UserInputService?  
-Well, in my totally and absolutely unbiased opinion this library, module or whatever you wanna call it, is way easier to use.  
-1. It is very Godot-like, do I need to say more?  
-2. It allows you to detect Input Actions easily (Roblox Beta Feature).  
-3. It correctly gets the physical mouse delta. In my tests, I saw that the built-in mouse delta only changes when camera moves.  
-4. It allows a easier way to get device rotation, acceleration and gravity.  
-5. It allows an easier way to get mouse scroll delta.  
-6. Yap, yap and blah... some other things that I am too lazy to include.
+You might be asking. Why would anyone use this over the original Roblox UserInputService?
+Well, in my totally and absolutely unbiased opinion this library, module or whatever you wanna call it, is way easier to use.
+
+1. It is very Godot-like, do I need to say more?
+2. It allows you to detect Input Actions easily (Roblox Beta Feature).
+3. It correctly gets the physical mouse delta. In my tests, I saw that the built-in mouse delta only changes when camera moves.
+4. It allows a easier way to get device rotation, acceleration and gravity.
+5. It allows an easier way to get mouse scroll delta.
+6. Supports defining **custom combined actions** like Shift+W, Ctrl+R etc.
+7. Yap, yap and blah... some other things that I am too lazy to include.
 
 ---
 
@@ -52,7 +58,6 @@ Place your `InputContext`, `InputAction`, and `InputBinding` instances inside th
 **Example Structure:**
 
 ```
-
 InputModule
 ├─ InputContext (instance of InputContext)
 │    ├─ MoveLeft (InputAction)
@@ -61,8 +66,7 @@ InputModule
 │    │    └─ KeyboardBinding (InputBinding)
 │    └─ Jump (InputAction)
 │         └─ KeyboardBinding (InputBinding)
-
-````
+```
 
 ---
 
@@ -70,7 +74,7 @@ InputModule
 
 ```lua
 local Input = require(path.to.InputModule)
-````
+```
 
 ---
 
@@ -141,6 +145,8 @@ local rotation = Input.GetDeviceRotation()
 Input.RebindAction("Jump", "KeyboardBinding", Enum.KeyCode.Space)
 ```
 
+**Note:** You can't rebind combined actions created with `AddAction`. It'll yell at you.
+
 ---
 
 ## Check if Any Input is Pressed
@@ -153,13 +159,33 @@ end
 
 ---
 
-## Cheatsheet 
-There are more methods to come... when I am not too lazy.
+## Custom Combined Actions
+
+You can now register your own custom actions that activate when **multiple keys are pressed together**, like Shift+W for sprinting or Ctrl+R for a shortcut.
+
+### Adding a Combined Action:
+
+```lua
+Input.AddAction("SprintForward", {Enum.KeyCode.LeftShift, Enum.KeyCode.W})
+```
+
+Now you can check it like any other action:
+
+```lua
+if Input.IsActionPressed("SprintForward") then
+	print("You are sprinting forward!")
+end
+```
+
+---
+
+## Cheatsheet
+
 | Method                               | Description                                                         | Returns   | Use Case                                      |
 | ------------------------------------ | ------------------------------------------------------------------- | --------- | --------------------------------------------- |
-| `IsActionPressed(name)`              | Checks if an InputAction is currently held.                         | `bool`    | Detecting if a specific action is being held. |
-| `IsActionJustPressed(name)`          | Checks if an InputAction was pressed this frame.                    | `bool`    | Trigger something once when pressed.          |
-| `IsActionJustReleased(name)`         | Checks if an InputAction was released this frame.                   | `bool`    | Trigger something once when released.         |
+| `IsActionPressed(name)`              | Checks if an InputAction or combined action is currently held.      | `bool`    | Detecting if a specific action is being held. |
+| `IsActionJustPressed(name)`          | Checks if an action was pressed this frame.                         | `bool`    | Trigger something once when pressed.          |
+| `IsActionJustReleased(name)`         | Checks if an action was released this frame.                        | `bool`    | Trigger something once when released.         |
 | `IsAnyPressed()`                     | Checks if **any input** is being pressed.                           | `bool`    | Detect when *anything* is currently pressed.  |
 | `GetAxis(negAction, posAction)`      | Returns `-1`, `0`, or `1` based on negative/positive action states. | `number`  | Horizontal/vertical directional input.        |
 | `GetVector(negX, posX, negY, posY)`  | Returns a `Vector2` from direction pairs.                           | `Vector2` | Movement or aiming input.                     |
@@ -167,12 +193,20 @@ There are more methods to come... when I am not too lazy.
 | `GetMouseDelta()`                    | Mouse movement delta since last frame.                              | `Vector2` | For look or aim control.                      |
 | `GetMouseWheelDelta()`               | Scroll wheel delta (resets each frame).                             | `number`  | Scroll actions or zoom systems.               |
 | `IsKeyPressed(KeyCode)`              | Continuously check if a key is pressed.                             | `bool`    | For inputs not tied to InputActions.          |
+| `IsKeyJustPressed(KeyCode)`          | Detect if a key was pressed this frame.                             | `bool`    | One-time press detection for raw keys.        |
 | `IsMouseButtonPressed(Button)`       | Check if a mouse button is pressed.                                 | `bool`    | For direct mouse input checks.                |
 | `GetDeviceAcceleration()`            | Returns current device acceleration vector.                         | `Vector3` | Mobile tilting controls.                      |
 | `GetDeviceGravity()`                 | Returns device gravity vector.                                      | `Vector3` | Detect device orientation.                    |
 | `GetDeviceRotation()`                | Returns device rotation vector.                                     | `Vector3` | Advanced motion control.                      |
+| `AddAction(name, keycodes)`          | Register a new combined-key action.                                 | `void`    | Shift+W style input combos.                   |
 | `RebindAction(name, binding, input)` | Change the input binding for an action.                             | `void`    | Allow rebinding keys in your game.            |
 
+---
+
+## Notes
+
+* Every action defined must be named differently.
+* You can't rebind combined actions created with `AddAction`. If you ask why... it's cuz I was too lazy to add the ability to do so, it's possible to do, and I will probably add the ability to do so in the future.
 
 ---
 
